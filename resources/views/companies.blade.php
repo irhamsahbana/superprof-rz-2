@@ -51,6 +51,7 @@
                         <th scope="col">Id</th>
                         <th scope="col">Name</th>
                         <th scope="col">Email</th>
+                        <th scope="col">Phone</th>
                         <th scope="col">Address</th>
                         <th scope="col">Created at</th>
                         <th scope="col">Action</th>
@@ -77,9 +78,9 @@
                     <form action="javascript:void(0)" id="CompanyForm" name="CompanyForm" class="form-horizontal" method="POST" enctype="multipart/form-data">
                         <input type="hidden" name="id" id="id">
                         <div class="form-group">
-                        <label for="name" class="col-sm-2 control-label">Nama Anda</label>
+                        <label for="name" class="col-sm-2 control-label">Nama</label>
                             <div class="col-sm-12">
-                                <input type="text" class="form-control" id="name" name="name" placeholder="masukan nama anda.." maxlength="50" required="">
+                                <input type="text" class="form-control" id="name" name="name" placeholder="Masukkan nama anda.." maxlength="50" required="">
                             </div>
                         </div>  
                         <div class="form-group">
@@ -89,7 +90,13 @@
                             </div>
                         </div>
                         <div class="form-group">
-                        <label class="col-sm-2 control-label">Alamat</label>
+                        <label for="phone" class="col-sm-2 control-label">Phone</label>
+                            <div class="col-sm-12">
+                                <input type="text" class="form-control" id="phone" name="phone" placeholder="Masukkan HP anda.." maxlength="50" required="">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                        <label for="address" class="col-sm-2 control-label">Alamat</label>
                             <div class="col-sm-12">
                                 <input type="text" class="form-control" id="address" name="address" placeholder="Masukkan alamat anda.." required="">
                             </div>
@@ -123,6 +130,7 @@
                 { data: 'id', name: 'id' },
                 { data: 'name', name: 'name' },
                 { data: 'email', name: 'email' },
+                { data: 'phone', name: 'phone' },
                 { data: 'address', name: 'address' },
                 { data: 'created_at', name: 'created_at' },
                 {data: 'action', name: 'action', orderable: false},
@@ -149,8 +157,9 @@
                     $('#company-modal').modal('show');
                     $('#id').val(res.id);
                     $('#name').val(res.name);
-                    $('#address').val(res.address);
                     $('#email').val(res.email);
+                    $('#phone').val(res.phone);
+                    $('#address').val(res.address);
                 },
                 error: function(data){
                     console.log(data);

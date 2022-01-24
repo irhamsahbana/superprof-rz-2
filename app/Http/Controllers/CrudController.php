@@ -42,6 +42,7 @@ class CrudController extends Controller
                 'id' => $request->id,
                 'name' => $request->name,
                 'email' => $request->email,
+                'phone' => $request->phone,
                 'address' => $request->address
             ]
         );

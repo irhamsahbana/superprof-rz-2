@@ -21,11 +21,4 @@ Route::get('crud', [CrudController::class, 'index']);
 Route::get('list', [CrudController::class, 'list']);
 Route::post('store-company', [CrudController::class, 'store']);
 Route::post('edit-company', [CrudController::class, 'edit']);
-Route::post('update-company', [CrudController::class, 'update']);
 Route::post('delete-company', [CrudController::class, 'destroy']);
-
-// Route::get('crud', function (Request $request) {
-//     $response = Http::get('http://127.0.0.1:8000/api/crud');
-//     $list = json_decode($response->getBody(), true);
-//     dd($list['data']);
-// });
