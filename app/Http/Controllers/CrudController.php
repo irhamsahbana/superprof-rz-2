@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Request;
+use App\Exports\CompaniesExport;
+use Maatwebsite\Excel\Facades\Excel;
 use App\Models\Company;
 use GuzzleHttp\Client;
 use Yajra\Datatables\Facades\Datatables;
@@ -72,5 +74,10 @@ class CrudController extends Controller
         $ListCompanies = Http::get('http://127.0.0.1:8000/api/crud');
 
         return json_decode($ListCompanies->getBody(), true);
+    }
+
+    public function export()
+    {
+        return Excel::download(new CompaniesExport, 'Companies.xlsx');
     }
 }

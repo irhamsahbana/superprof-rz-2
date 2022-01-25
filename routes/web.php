@@ -22,3 +22,4 @@ Route::get('list', [CrudController::class, 'list']);
 Route::post('store-company', [CrudController::class, 'store']);
 Route::post('edit-company', [CrudController::class, 'edit']);
 Route::post('delete-company', [CrudController::class, 'destroy']);
+Route::get('companies/export/', [CrudController::class, 'export']);
