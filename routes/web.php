@@ -23,3 +23,8 @@ Route::post('store-company', [CrudController::class, 'store']);
 Route::post('edit-company', [CrudController::class, 'edit']);
 Route::post('delete-company', [CrudController::class, 'destroy']);
 Route::get('companies/export/', [CrudController::class, 'export']);
+
+Route::post('dropzone/upload', [CrudController::class, 'upload'])->name('dropzone.upload');
+Route::get('dropzone/fetch', [CrudController::class, 'fetch'])->name('dropzone.fetch');
+Route::get('dropzone/delete', [CrudController::class, 'delete'])->name('dropzone.delete');
+
