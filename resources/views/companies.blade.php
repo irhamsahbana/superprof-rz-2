@@ -34,24 +34,25 @@
             <div class="position-sticky pt-3">
               <ul class="nav flex-column">
                 <li class="nav-item">
-                  <a class="nav-link active btn btn-primary" aria-current="page" href="/">
+                  <a class="nav-link active btn btn-secondary" aria-current="page" href="/">
                     <span data-feather="home"></span>
-                    Menu
+                    Dashboard
                   </a>
                 </li>
               </ul>
             </div>
           </nav>
-      
+
           <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
               <h1 class="h2">Dashboard</h1>
             </div>
             <div class="pull-right mb-2">
-                <a class="btn btn-success" onClick="add()" href="javascript:void(0)">Create Company</a>
-                <a class="btn btn-primary" onClick="importcompanies()" href="javascript:void(0)">Import</a>
+                <a class="btn btn-warning" onClick="importcompanies()" href="javascript:void(0)" >Import</a>
                 <a class="btn btn-primary" href="{{ url('companies/export/') }}">Export</a>
+                <a class="btn btn-success" onClick="add()" href="javascript:void(0)" style="float: right;">Create Company</a>
             </div>
+            <br>
             @if ($message = Session::get('success'))
                 <div class="alert alert-success">
                     <p>{{ $message }}</p>
@@ -140,11 +141,13 @@
                     <form id="dropzoneForm" class="dropzone" action="{{ route('dropzone.upload') }}">
                         @csrf
                     </form>
+                    <br>
                     <div align="center">
                         <button type="button" class="btn btn-info" id="submit-all">Upload</button>
                     </div>
                 </div>
-                <div class="modal-footer"></div>
+                <div class="modal-footer">
+                </div>
             </div>
         </div>
     </div>
@@ -182,7 +185,7 @@
             $('#CompanyModal').html("Add Company");
             $('#company-modal').modal('show');
             $('#id').val('');
-        }  
+        }
 
         function importcompanies() {
             $('#import-modal').modal('show');
@@ -254,8 +257,13 @@
         });
 
         Dropzone.options.dropzoneForm = {
+            maxFiles : 1,
             autoProcessQueue : false,
             acceptedFiles : ".xlsx,.xls",
+            accept: function(file, done) {
+                console.log("uploaded");
+                done();
+            },
 
             init:function(){
                 var submitButton = document.querySelector("#submit-all");
@@ -265,21 +273,32 @@
                     myDropzone.processQueue();
                 });
 
+                this.on("addedfile", function() {
+                    if (this.files[1]!=null){
+                        this.removeFile(this.files[0]);
+                    }
+                });
+
                 this.on("complete", function() {
                     if(this.getQueuedFiles().length == 0 && this.getUploadingFiles().length == 0) {
                         var _this = this;
                         _this.removeAllFiles();
+
+                        $('#import-modal').modal('hide');
+
+                        var oTable = $('#crud').dataTable();
+                        oTable.fnDraw(false);
                     }
 
-                    load_images();
+                    load_files();
                 });
             }
 
         };
 
-        load_images();
+        load_files();
 
-        function load_images()
+        function load_files()
         {
             $.ajax({
                 url: "{{ route('dropzone.fetch') }}",
@@ -296,7 +315,7 @@
                 url: "{{ route('dropzone.delete') }}",
                 data: {name : name},
                 success: function(data) {
-                    load_images();
+                    load_files();
                 }
             })
         });

@@ -81,28 +81,41 @@ class CrudController extends Controller
         return Excel::download(new CompaniesExport, 'Companies.xlsx');
     }
 
-    function upload(Request $request)
+    public function import(Request $request)
     {
-        $image = $request->file('file');
+        $file = $request->file('file');
 
-        $imageName = time() . '.' . $image->extension();
+        $rows = Excel::toArray(new \App\Imports\CompaniesImport, $file);
 
-        $image->move(public_path('uploads'), $imageName);
+        $cleanData = array_map(function ($tag) {
+            return array(
+                'id' => $tag['no'],
+                'name' => $tag['nama'],
+                'email' => $tag['email'],
+                'phone' => $tag['phone'],
+                'address' => $tag['address'],
+                'created_at' => $tag['created'],
+                'updated_at' => $tag['update']
+            );
+        }, $rows[0]);
 
-        return response()->json(['success' => $imageName]);
+        Http::asForm()->post('http://127.0.0.1:8000/api/import-companies',
+            [
+                'data' => $cleanData
+            ]
+        );
     }
 
     public function fetch()
     {
-        $images = \File::allFiles(public_path('images'));
+        $files = \File::allFiles(public_path('uploads'));
         $output = '<div class="row">';
 
-        foreach($images as $image)
-        {
+        foreach ($files as $file) {
             $output .= '
             <div class="col-md-2" style="margin-bottom:16px;" align="center">
-                        <img src="'.asset('uploads/' . $image->getFilename()).'" class="img-thumbnail" width="175" height="175" style="height:175px;" />
-                        <button type="button" class="btn btn-link remove_image" id="'.$image->getFilename().'">Remove</button>
+                        <img src="' . asset('uploads/' . $file->getFilename()) . '" class="img-thumbnail" width="175" height="175" style="height:175px;" />
+                        <button type="button" class="btn btn-link remove_image" id="' . $file->getFilename() . '">Remove</button>
                     </div>
             ';
         }
@@ -112,7 +125,7 @@ class CrudController extends Controller
 
     public function delete(Request $request)
     {
-        if($request->get('name'))
+        if ($request->get('name'))
             \File::delete(public_path('uploads/' . $request->get('name')));
     }
 }
