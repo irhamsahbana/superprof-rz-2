@@ -22,6 +22,7 @@ class CrudController extends Controller
     {
         $response = Http::get('http://127.0.0.1:8000/api/crud');
         $list = json_decode($response->getBody(), true);
+
         return view('companies', ['data' => $list['data']]);
     }
 

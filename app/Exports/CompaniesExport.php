@@ -6,7 +6,6 @@ use Illuminate\Support\Facades\Http;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use Maatwebsite\Excel\Events\AfterSheet;
 use Maatwebsite\Excel\Concerns\{
-    // FromView,
     FromArray,
     ShouldAutoSize,
     WithHeadings,
