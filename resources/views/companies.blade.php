@@ -62,7 +62,7 @@
               <table class="table table-bordered" id="crud">
                   <thead>
                       <tr>
-                        <th scope="col">Id</th>
+                        <th scope="col">No</th>
                         <th scope="col">Name</th>
                         <th scope="col">Email</th>
                         <th scope="col">Phone</th>
@@ -168,7 +168,7 @@
             serverSide: true,
             ajax: "{{ url('list') }}",
             columns: [
-                { data: 'id', name: 'id' },
+                { data: 'no', name: 'id' },
                 { data: 'name', name: 'name' },
                 { data: 'email', name: 'email' },
                 { data: 'phone', name: 'phone' },

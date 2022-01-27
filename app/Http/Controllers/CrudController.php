@@ -90,7 +90,8 @@ class CrudController extends Controller
 
         $cleanData = array_map(function ($tag) {
             return array(
-                'id' => $tag['no'],
+                'no' => $tag['no'],
+                'id' => $tag['id'],
                 'name' => $tag['nama'],
                 'email' => $tag['email'],
                 'phone' => $tag['phone'],

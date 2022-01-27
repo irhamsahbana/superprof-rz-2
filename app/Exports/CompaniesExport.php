@@ -4,6 +4,7 @@ namespace App\Exports;
 
 use Illuminate\Support\Facades\Http;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
+use PhpOffice\PhpSpreadsheet\Shared\Date;
 use Maatwebsite\Excel\Events\AfterSheet;
 use Maatwebsite\Excel\Concerns\{
     FromArray,
@@ -11,33 +12,48 @@ use Maatwebsite\Excel\Concerns\{
     WithHeadings,
     WithStyles,
     WithEvents,
+    WithMapping,
+    WithColumnFormatting
 };
 
-class CompaniesExport implements ShouldAutoSize, WithHeadings, FromArray, WithStyles, WithEvents
+class CompaniesExport implements ShouldAutoSize, WithHeadings, FromArray, WithStyles, WithEvents, WithMapping, WithColumnFormatting
 {
+    private static $response;
+
     public function __construct()
     {
-        $this->response = Http::get('http://127.0.0.1:8000/api/all-company')->json();
+        self::$response = Http::get('http://127.0.0.1:8000/api/all-company')->json();
+
         date_default_timezone_set('Asia/Jakarta');
     }
 
     public function array(): array
     {
-        $array = $this->response;
-        foreach ($array as $arr) {
-            $arr['created_at'] = (string) $arr['created_at'];
-        };
-        return $array;
+        return self::$response;
+    }
+
+    public function map($response): array
+    {
+        return [
+            $response['no'],
+            $response['id'],
+            $response['name'],
+            $response['email'],
+            $response['phone'],
+            $response['address'],
+            $response['created_at'],
+            $response['updated_at'],
+        ];
     }
 
     public function headings(): array
     {
         return [
             ['Export Data User'],
-            ['Jumlah User ', Count($this->response)],
+            ['Jumlah User ', count(self::$response)],
             ['Di Export Pada ', date("Y-m-d h:i:s")],
             [],
-            ['No', 'Nama', 'Email', 'Phone', 'Address', 'Created', 'Update'],
+            ['No', 'Id', 'Nama', 'Email', 'Phone', 'Address', 'Created', 'Update'],
         ];
     }
 
@@ -50,13 +66,25 @@ class CompaniesExport implements ShouldAutoSize, WithHeadings, FromArray, WithSt
 
     public function registerEvents(): array
     {
-        return [
-            AfterSheet::class    => function (AfterSheet $event) {
+        $dataCount = count(self::$response) + 5;
 
-                $event->sheet->getDelegate()->getStyle('A5:G5')
-                    ->getAlignment()
-                    ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        return [
+            AfterSheet::class => function (AfterSheet $event) use ($dataCount) {
+
+                $event->sheet
+                        ->getDelegate()
+                        ->getStyle('A1:E'. $dataCount)
+                        ->getAlignment()
+                        ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
             },
+        ];
+    }
+
+    public function columnFormats(): array
+    {
+        return [
+            // 'G' => NumberFormat::FORMAT_DATE_DDMMYYYY,
+            // 'H' => NumberFormat::FORMAT_CURRENCY_EUR_SIMPLE,
         ];
     }
 }
