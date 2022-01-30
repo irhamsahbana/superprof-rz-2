@@ -5,6 +5,9 @@
         <title>Crud Ajax</title>
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
+        {{-- Axios --}}
+        <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
         {{-- JQuery --}}
         <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 
@@ -95,25 +98,25 @@
                         <div class="form-group">
                         <label for="name" class="col-sm-2 control-label">Nama</label>
                             <div class="col-sm-12">
-                                <input type="text" class="form-control" id="name" name="name" placeholder="Masukkan nama anda.." maxlength="50" required="">
+                                <input type="text" class="form-control" id="name" name="name" placeholder="Masukkan nama anda.." maxlength="50" >
                             </div>
                         </div>  
                         <div class="form-group">
                         <label for="name" class="col-sm-2 control-label">Email</label>
                             <div class="col-sm-12">
-                                <input type="email" class="form-control" id="email" name="email" placeholder="Masukkan email anda.." maxlength="50" required="">
+                                <input type="email" class="form-control" id="email" name="email" placeholder="Masukkan email anda.." maxlength="50" >
                             </div>
                         </div>
                         <div class="form-group">
                         <label for="phone" class="col-sm-2 control-label">Phone</label>
                             <div class="col-sm-12">
-                                <input type="text" class="form-control" id="phone" name="phone" placeholder="Masukkan HP anda.." maxlength="50" required="">
+                                <input type="text" class="form-control" id="phone" name="phone" placeholder="Masukkan HP anda.." maxlength="50" >
                             </div>
                         </div>
                         <div class="form-group">
                         <label for="address" class="col-sm-2 control-label">Alamat</label>
                             <div class="col-sm-12">
-                                <input type="text" class="form-control" id="address" name="address" placeholder="Masukkan alamat anda.." required="">
+                                <input type="text" class="form-control" id="address" name="address" placeholder="Masukkan alamat anda.." >
                             </div>
                         </div>
                         <div class="col-sm-offset-2 col-sm-10">
@@ -154,6 +157,11 @@
     <!-- import model -->
     </body>
     <script type="text/javascript">
+        const hostName = 'http://Server1_ajax.test/api';
+        const endpoint = {
+            post: `${hostName}/store-company`,
+            get: `${hostName}/edit-company`,
+        };
 
         $(document).ready( function () {
             $.ajaxSetup({
@@ -185,6 +193,16 @@
             $('#CompanyModal').html("Add Company");
             $('#company-modal').modal('show');
             $('#id').val('');
+
+            axios.get()
+                .then(function (response) {
+                    // handle success
+                    console.log(response);
+                })
+                .catch(function (error) {
+                    // handle error
+                    console.log(error);
+                })
         }
 
         function importcompanies() {
@@ -205,6 +223,7 @@
                     $('#email').val(res.email);
                     $('#phone').val(res.phone);
                     $('#address').val(res.address);
+                    console.log(res);
                 },
                 error: function(data){
                     console.log(data);
@@ -233,36 +252,73 @@
         }
 
         $('#CompanyForm').submit(function(e) {
-            e.preventDefault();
-            var formData = new FormData(this);
+            e.preventDefault()
 
-            $.ajax({
-                type:'POST',
-                url: "{{ url('store-company')}}",
-                data: formData,
-                cache:false,
-                contentType: false,
-                processData: false,
-                success: (data) => {
+            var dataCompany = {
+                id: $('#id').val(),
+                name: $('#name').val(),
+                email: $('#email').val(),
+                phone: $('#phone').val(),
+                address: $('#address').val()
+            };
+
+            //contoh isi variable dataCompany
+
+            axios.post(endpoint.post, dataCompany)
+                .then(function (response) {
+                    let data = response.data;
+
                     $("#company-modal").modal('hide');
                     var oTable = $('#crud').dataTable();
                     oTable.fnDraw(false);
                     $("#btn-save").html('Submit');
                     $("#btn-save").attr("disabled", false);
-                },
-                error: function(data){
-                    console.log(data);
-                }
-            });
+
+                    let errorMessages = '';
+                    let newLine = '\n';
+
+                    if (data.errors) {
+                        for (const property in response.data.errors) {
+                            var errors = response.data.errors[property];
+
+                            errorMessages += `${property} : ${errors}${newLine}`;
+                        }
+
+                        alert(errorMessages);
+                    }
+                })
+                .catch(function (error) {
+                    console.log(error);
+                });
         });
 
         Dropzone.options.dropzoneForm = {
             maxFiles : 1,
+            parallelUploads: 1,
             autoProcessQueue : false,
             acceptedFiles : ".xlsx,.xls",
             accept: function(file, done) {
                 console.log("uploaded");
                 done();
+            },
+
+            success: function(file, response){
+                let errorMessages = '';
+                let newLine = '\n';
+
+                if (response) {
+                    var resp = JSON.parse(response);
+
+                    if (resp.errors) {
+                        for (const property in resp.errors) {
+                            var errors = resp.errors[property];
+
+                            errorMessages += `${errors}${newLine}`;
+                        }
+
+                        alert(errorMessages);
+                    }
+                }
             },
 
             init:function(){
@@ -289,35 +345,8 @@
                         var oTable = $('#crud').dataTable();
                         oTable.fnDraw(false);
                     }
-
-                    load_files();
                 });
             }
-
         };
-
-        load_files();
-
-        function load_files()
-        {
-            $.ajax({
-                url: "{{ route('dropzone.fetch') }}",
-                success:function(data) {
-                    $('#uploaded_image').html(data);
-                }
-            })
-        }
-
-        $(document).on('click', '.remove_image', function(){
-            var name = $(this).attr('id');
-
-            $.ajax({
-                url: "{{ route('dropzone.delete') }}",
-                data: {name : name},
-                success: function(data) {
-                    load_files();
-                }
-            })
-        });
     </script>
 </html>

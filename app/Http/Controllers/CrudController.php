@@ -12,15 +12,14 @@ use Yajra\Datatables\Facades\Datatables;
 
 class CrudController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+    private static $hostName = 'http://127.0.0.1:8000/api';
 
     public function index()
     {
-        $response = Http::get('http://127.0.0.1:8000/api/crud');
+        $endpoint = self::$hostName.'/crud';
+
+        $response = Http::get($endpoint);
+
         $list = json_decode($response->getBody(), true);
 
         return view('companies', ['data' => $list['data']]);
@@ -28,7 +27,7 @@ class CrudController extends Controller
 
     public function list()
     {
-        $response = Http::get('http://127.0.0.1:8000/api/crud');
+        $response = Http::get(self::$hostName.'/crud');
         $list = json_decode($response->getBody(), true);
         $list = $list['data'];
         return datatables()->of($list)
@@ -39,8 +38,7 @@ class CrudController extends Controller
 
     public function store(Request $request)
     {
-        Http::asForm()->post(
-            'http://127.0.0.1:8000/api/store-company',
+        Http::asForm()->post(self::$hostName.'/store-company',
             [
                 'id' => $request->id,
                 'name' => $request->name,
@@ -53,8 +51,7 @@ class CrudController extends Controller
 
     public function edit(Request $request)
     {
-        $payload = Http::asForm()->post(
-            'http://127.0.0.1:8000/api/edit-company',
+        $payload = Http::asForm()->post(self::$hostName.'/edit-company',
             [
                 'id' => $request->id
             ]
@@ -65,14 +62,13 @@ class CrudController extends Controller
 
     public function destroy(Request $request)
     {
-        Http::asForm()->post(
-            'http://127.0.0.1:8000/api/delete-company',
+        Http::asForm()->post(self::$hostName.'/delete-company',
             [
                 'id' => $request->id
             ]
         );
 
-        $ListCompanies = Http::get('http://127.0.0.1:8000/api/crud');
+        $ListCompanies = Http::get(self::$hostName.'/crud');
 
         return json_decode($ListCompanies->getBody(), true);
     }
@@ -101,33 +97,12 @@ class CrudController extends Controller
             );
         }, $rows[0]);
 
-        Http::asForm()->post('http://127.0.0.1:8000/api/import-companies',
+        $response = Http::asForm()->post(self::$hostName.'/import-companies',
             [
                 'data' => $cleanData
             ]
         );
-    }
 
-    public function fetch()
-    {
-        $files = \File::allFiles(public_path('uploads'));
-        $output = '<div class="row">';
-
-        foreach ($files as $file) {
-            $output .= '
-            <div class="col-md-2" style="margin-bottom:16px;" align="center">
-                        <img src="' . asset('uploads/' . $file->getFilename()) . '" class="img-thumbnail" width="175" height="175" style="height:175px;" />
-                        <button type="button" class="btn btn-link remove_image" id="' . $file->getFilename() . '">Remove</button>
-                    </div>
-            ';
-        }
-        $output .= '</div>';
-        echo $output;
-    }
-
-    public function delete(Request $request)
-    {
-        if ($request->get('name'))
-            \File::delete(public_path('uploads/' . $request->get('name')));
+        return $response;
     }
 }
