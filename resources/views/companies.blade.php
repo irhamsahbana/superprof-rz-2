@@ -23,6 +23,9 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.5.1/dropzone.css" />
         <script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.5.1/dropzone.js"></script>
 
+        {{-- Socket.IO client --}}
+        <script src="https://cdn.socket.io/4.4.1/socket.io.min.js" integrity="sha384-fKnu0iswBIqkjxrhQCTZ7qlLHOFEgNkRmK2vaO/LbTZSXdJfAu6ewRBdwHPhBo/H" crossorigin="anonymous"></script>
+
     </head>
 <body>
     <header class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0 shadow">
@@ -163,11 +166,25 @@
             get: `${hostName}/edit-company`,
         };
 
+        //websocket server
+        const socketIpAddress = '127.0.0.1';
+        const socketPort = '3000';
+        window.socket = io(`${socketIpAddress}:${socketPort}`);
+
+        window.reDrawDataTable = function () {
+            var oTable = $('#crud').dataTable();
+            oTable.fnDraw(false);
+        }
+
+        socket.on('refreshData', () => {
+            reDrawDataTable();
+        });
+
         $(document).ready( function () {
             $.ajaxSetup({
             headers: {
-            'Access-Control-Allow-Origin': '*',
-            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                'Access-Control-Allow-Origin': '*',
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             }
         });
 
@@ -193,16 +210,6 @@
             $('#CompanyModal').html("Add Company");
             $('#company-modal').modal('show');
             $('#id').val('');
-
-            axios.get()
-                .then(function (response) {
-                    // handle success
-                    console.log(response);
-                })
-                .catch(function (error) {
-                    // handle error
-                    console.log(error);
-                })
         }
 
         function importcompanies() {
@@ -241,8 +248,9 @@
                     cache:false,
                     dataType: 'json',
                     success: function(res){
-                        var oTable = $('#crud').dataTable();
-                        oTable.fnDraw(false);
+                        reDrawDataTable();
+
+                        socket.emit('refreshData');
                     },
                     error: function(data){
                         console.log(data);
@@ -269,8 +277,11 @@
                     let data = response.data;
 
                     $("#company-modal").modal('hide');
-                    var oTable = $('#crud').dataTable();
-                    oTable.fnDraw(false);
+
+                    reDrawDataTable();
+
+                    socket.emit('refreshData');
+
                     $("#btn-save").html('Submit');
                     $("#btn-save").attr("disabled", false);
 
@@ -342,8 +353,9 @@
 
                         $('#import-modal').modal('hide');
 
-                        var oTable = $('#crud').dataTable();
-                        oTable.fnDraw(false);
+                        reDrawDataTable();
+
+                        socket.emit('refreshData');
                     }
                 });
             }
